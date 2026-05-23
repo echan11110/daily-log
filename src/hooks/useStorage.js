@@ -87,5 +87,26 @@ export function useStorage() {
     [loadDay]
   )
 
-  return { taskNames, setTaskNames, loadDay, saveDay, getWeekData }
+  const getMonthData = useCallback((year, month) => {
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+    const days = []
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(year, month, d)
+      const raw = localStorage.getItem(dateKey(date))
+      let dayData = null
+      let done = 0
+      let total = 0
+      if (raw) {
+        try {
+          dayData = JSON.parse(raw)
+          total = dayData.tasks.length
+          done = dayData.tasks.filter((t) => t.status === 'done').length
+        } catch {}
+      }
+      days.push({ date, dayData, done, total, hasData: !!raw && total > 0 })
+    }
+    return days
+  }, [])
+
+  return { taskNames, setTaskNames, loadDay, saveDay, getWeekData, getMonthData }
 }
