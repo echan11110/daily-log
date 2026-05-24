@@ -158,6 +158,7 @@ export function useStorage(user) {
       const stored = dayStore[dateKey(date)]
       if (stored) {
         const data = { ...stored, tasks: [...(stored.tasks ?? [])] }
+        data.tasks = data.tasks.slice(0, taskNames.length)
         while (data.tasks.length < taskNames.length) {
           data.tasks.push({ status: 'empty', note: '' })
         }

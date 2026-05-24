@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import TaskRow from './TaskRow.jsx'
+import PunishmentVerdict from './PunishmentVerdict.jsx'
 import { getDailyQuote } from '../data/quotes.js'
 
 const DAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
@@ -13,9 +14,8 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
   const [dayData, setDayData] = useState(() => loadDay(today))
   const [isEditing, setIsEditing] = useState(false)
 
-  // Build the 7 tab dates (Mon–Sun of the current week containing today)
   const weekDates = (() => {
-    const dow = today.getDay() // 0=Sun
+    const dow = today.getDay()
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(today)
       d.setDate(today.getDate() - dow + i)
@@ -52,6 +52,40 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
   function handleNameChange(idx, value) {
     const updated = taskNames.map((n, i) => (i === idx ? value : n))
     setTaskNames(updated)
+  }
+
+  function handleMoveUp(idx) {
+    if (idx === 0) return
+    const newNames = [...taskNames]
+    ;[newNames[idx - 1], newNames[idx]] = [newNames[idx], newNames[idx - 1]]
+    setTaskNames(newNames)
+    const newTasks = [...dayData.tasks]
+    ;[newTasks[idx - 1], newTasks[idx]] = [newTasks[idx], newTasks[idx - 1]]
+    persist({ ...dayData, tasks: newTasks })
+  }
+
+  function handleMoveDown(idx) {
+    if (idx === taskNames.length - 1) return
+    const newNames = [...taskNames]
+    ;[newNames[idx], newNames[idx + 1]] = [newNames[idx + 1], newNames[idx]]
+    setTaskNames(newNames)
+    const newTasks = [...dayData.tasks]
+    ;[newTasks[idx], newTasks[idx + 1]] = [newTasks[idx + 1], newTasks[idx]]
+    persist({ ...dayData, tasks: newTasks })
+  }
+
+  function handleDelete(idx) {
+    const newNames = taskNames.filter((_, i) => i !== idx)
+    setTaskNames(newNames)
+    const newTasks = dayData.tasks.filter((_, i) => i !== idx)
+    persist({ ...dayData, tasks: newTasks })
+  }
+
+  function handleAddTask() {
+    const newNames = [...taskNames, 'New task']
+    setTaskNames(newNames)
+    const newTasks = [...dayData.tasks, { status: 'empty', note: '' }]
+    persist({ ...dayData, tasks: newTasks })
   }
 
   function handleReflectionChange(e) {
@@ -101,7 +135,7 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
         </button>
       </div>
 
-      {/* Intention banner (set from monthly plan view) */}
+      {/* Intention banner */}
       {dayData.intention && (
         <div className="intention-banner">
           <span className="intention-banner-label">★ Intention</span>
@@ -120,11 +154,22 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
             note={dayData.tasks[i]?.note ?? ''}
             priority={dayData.tasks[i]?.priority ?? false}
             isEditing={isEditing}
+            isFirst={i === 0}
+            isLast={i === taskNames.length - 1}
             onStatusToggle={handleStatusToggle}
             onNoteChange={handleNoteChange}
             onNameChange={handleNameChange}
+            onMoveUp={() => handleMoveUp(i)}
+            onMoveDown={() => handleMoveDown(i)}
+            onDelete={() => handleDelete(i)}
           />
         ))}
+
+        {isEditing && (
+          <button className="task-add-btn" onClick={handleAddTask}>
+            + Add task
+          </button>
+        )}
       </div>
 
       {/* Score */}
@@ -134,6 +179,9 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
           {done} / {total} = <strong>{pct}%</strong>
         </span>
       </div>
+
+      {/* Punishment verdict */}
+      <PunishmentVerdict done={done} total={total} />
 
       {/* Reflection */}
       <div className="reflection-block">

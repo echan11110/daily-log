@@ -1,17 +1,28 @@
-export default function TaskRow({ index, name, status, note, priority, isEditing, onStatusToggle, onNoteChange, onNameChange }) {
+export default function TaskRow({
+  index, name, status, note, priority, isEditing,
+  onStatusToggle, onNoteChange, onNameChange,
+  onMoveUp, onMoveDown, onDelete,
+  isFirst, isLast,
+}) {
   const NEXT_STATUS = { empty: 'done', done: 'cross', cross: 'empty' }
-
   const statusLabel = status === 'done' ? '✓' : status === 'cross' ? '✗' : ''
   const statusClass = `status-btn status-${status}`
 
   return (
     <div className={`task-row task-row--${status}${priority ? ' task-row--priority' : ''}`}>
-      <span className="task-num">
-        {priority
-          ? <span className="task-priority-star">★</span>
-          : String(index + 1).padStart(2, '0')
-        }
-      </span>
+      {isEditing ? (
+        <div className="task-move-btns">
+          <button className="task-move-btn" onClick={onMoveUp} disabled={isFirst} aria-label="Move up">↑</button>
+          <button className="task-move-btn" onClick={onMoveDown} disabled={isLast} aria-label="Move down">↓</button>
+        </div>
+      ) : (
+        <span className="task-num">
+          {priority
+            ? <span className="task-priority-star">★</span>
+            : String(index + 1).padStart(2, '0')
+          }
+        </span>
+      )}
 
       {isEditing ? (
         <input
@@ -21,6 +32,10 @@ export default function TaskRow({ index, name, status, note, priority, isEditing
         />
       ) : (
         <span className={`task-name${status === 'done' ? ' task-name--done' : ''}`}>{name}</span>
+      )}
+
+      {isEditing && (
+        <button className="task-delete-btn" onClick={onDelete} aria-label={`Delete task ${index + 1}`}>×</button>
       )}
 
       <button
