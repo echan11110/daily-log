@@ -1,16 +1,44 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
+const PASSPHRASE_KEY = 'daily-log-passphrase'
+
+async function sha256hex(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+async function credentialsFromPassphrase(passphrase) {
+  const hash = await sha256hex(passphrase.toLowerCase().trim())
+  return {
+    email: `${hash.slice(0, 24)}@daily-log.app`,
+    password: `dl__${hash}`,
+  }
+}
+
 export function useAuth() {
   const [user, setUser]       = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Pick up any existing session (including magic-link token in URL)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+    async function init() {
+      // Restore existing Supabase session
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        setUser(session.user)
+        setLoading(false)
+        return
+      }
+
+      // Auto sign-in from saved passphrase
+      const saved = localStorage.getItem(PASSPHRASE_KEY)
+      if (saved) {
+        await signInWithPassphrase(saved)
+      }
       setLoading(false)
-    })
+    }
+
+    init()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
@@ -19,20 +47,32 @@ export function useAuth() {
     return () => subscription.unsubscribe()
   }, [])
 
-  async function signInWithEmail(email) {
-    return supabase.auth.signInWithOtp({
-      email,
-      options: {
-        // After clicking the link, land back on the app
-        emailRedirectTo: window.location.origin + window.location.pathname,
-        shouldCreateUser: true,
-      },
-    })
+  async function signInWithPassphrase(passphrase) {
+    const { email, password } = await credentialsFromPassphrase(passphrase)
+
+    // Try signing in first (existing account)
+    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password })
+    if (!signInErr) {
+      localStorage.setItem(PASSPHRASE_KEY, passphrase)
+      return { error: null }
+    }
+
+    // Account doesn't exist yet — create it
+    if (signInErr.message.toLowerCase().includes('invalid login credentials')) {
+      const { error: signUpErr } = await supabase.auth.signUp({ email, password })
+      if (!signUpErr) {
+        localStorage.setItem(PASSPHRASE_KEY, passphrase)
+      }
+      return { error: signUpErr ?? null }
+    }
+
+    return { error: signInErr }
   }
 
   async function signOut() {
+    localStorage.removeItem(PASSPHRASE_KEY)
     await supabase.auth.signOut()
   }
 
-  return { user, loading, signInWithEmail, signOut }
+  return { user, loading, signInWithPassphrase, signOut }
 }

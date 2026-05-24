@@ -942,6 +942,16 @@ input, textarea { font: inherit; }
 .login-btn:active:not(:disabled) { transform: scale(.98); }
 .login-btn:disabled { opacity: .45; cursor: not-allowed; }
 
+.login-hint-text {
+  font-family: var(--font-body);
+  font-size: .76rem;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.55;
+  opacity: .7;
+  margin-top: -.2rem;
+}
+
 .login-error {
   font-family: var(--font-body);
   font-size: .8rem;
