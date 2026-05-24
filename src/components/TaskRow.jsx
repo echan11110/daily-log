@@ -1,12 +1,17 @@
-export default function TaskRow({ index, name, status, note, isEditing, onStatusToggle, onNoteChange, onNameChange }) {
+export default function TaskRow({ index, name, status, note, priority, isEditing, onStatusToggle, onNoteChange, onNameChange }) {
   const NEXT_STATUS = { empty: 'done', done: 'cross', cross: 'empty' }
 
   const statusLabel = status === 'done' ? '✓' : status === 'cross' ? '✗' : ''
   const statusClass = `status-btn status-${status}`
 
   return (
-    <div className={`task-row task-row--${status}`}>
-      <span className="task-num">{String(index + 1).padStart(2, '0')}</span>
+    <div className={`task-row task-row--${status}${priority ? ' task-row--priority' : ''}`}>
+      <span className="task-num">
+        {priority
+          ? <span className="task-priority-star">★</span>
+          : String(index + 1).padStart(2, '0')
+        }
+      </span>
 
       {isEditing ? (
         <input

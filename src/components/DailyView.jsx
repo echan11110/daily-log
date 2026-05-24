@@ -101,6 +101,14 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
         </button>
       </div>
 
+      {/* Intention banner (set from monthly plan view) */}
+      {dayData.intention && (
+        <div className="intention-banner">
+          <span className="intention-banner-label">★ Intention</span>
+          <span className="intention-banner-text">{dayData.intention}</span>
+        </div>
+      )}
+
       {/* Task list */}
       <div className="task-list">
         {taskNames.map((name, i) => (
@@ -110,6 +118,7 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
             name={name}
             status={dayData.tasks[i]?.status ?? 'empty'}
             note={dayData.tasks[i]?.note ?? ''}
+            priority={dayData.tasks[i]?.priority ?? false}
             isEditing={isEditing}
             onStatusToggle={handleStatusToggle}
             onNoteChange={handleNoteChange}

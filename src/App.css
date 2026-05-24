@@ -496,6 +496,45 @@ input, textarea { font: inherit; }
   color: var(--text-dim);
 }
 
+/* ── Intention banner (Daily view) ────────────────── */
+.intention-banner {
+  display: flex;
+  align-items: baseline;
+  gap: .6rem;
+  margin-bottom: 1rem;
+  padding: .55rem .75rem;
+  background: rgba(124,58,237,.1);
+  border: 1px solid rgba(124,58,237,.3);
+  border-radius: 6px;
+}
+
+.intention-banner-label {
+  font-family: var(--font-mono);
+  font-size: .65rem;
+  color: #A78BFA;
+  letter-spacing: .06em;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.intention-banner-text {
+  font-family: var(--font-body);
+  font-size: .83rem;
+  color: #C4B5FD;
+  line-height: 1.45;
+  font-style: italic;
+}
+
+/* Priority task row */
+.task-row--priority {
+  background: rgba(124,58,237,.07) !important;
+}
+
+.task-priority-star {
+  color: #A78BFA;
+  font-size: .8rem;
+}
+
 /* ── Monthly view ──────────────────────────────────── */
 .monthly-view { padding-top: .25rem; }
 

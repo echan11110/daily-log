@@ -52,6 +52,7 @@ export default function App() {
             <MonthlyView
               getMonthData={getMonthData}
               loadDay={loadDay}
+              saveDay={saveDay}
               taskNames={taskNames}
             />
           )}

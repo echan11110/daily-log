@@ -93,17 +93,23 @@ export function useStorage() {
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(year, month, d)
       const raw = localStorage.getItem(dateKey(date))
-      let dayData = null
+      let parsed = null
       let done = 0
       let total = 0
       if (raw) {
         try {
-          dayData = JSON.parse(raw)
-          total = dayData.tasks.length
-          done = dayData.tasks.filter((t) => t.status === 'done').length
+          parsed = JSON.parse(raw)
+          total = parsed.tasks?.length ?? 0
+          done  = parsed.tasks?.filter((t) => t.status === 'done').length ?? 0
         } catch {}
       }
-      days.push({ date, dayData, done, total, hasData: !!raw && total > 0 })
+      // hasData = someone actually toggled tasks (not just wrote a plan)
+      const hasActivity = done > 0 ||
+        (parsed?.tasks?.some((t) => t.status === 'cross') ?? false)
+      const hasData = !!raw && total > 0 && hasActivity
+      // hasPlan = future day with a written intention
+      const hasPlan = !!(parsed?.intention?.trim())
+      days.push({ date, done, total, hasData, hasPlan })
     }
     return days
   }, [])
