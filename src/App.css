@@ -296,6 +296,62 @@ input, textarea { font: inherit; }
 .task-note:focus { border-color: rgba(255,255,255,.15); }
 .task-note::placeholder { color: #1E293B; }
 
+/* ── Week navigation ───────────────────────────────── */
+.week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .6rem;
+}
+
+.week-nav-label {
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  color: var(--text-dim);
+  letter-spacing: .04em;
+}
+
+.week-nav-btn {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, color .15s;
+  flex-shrink: 0;
+}
+
+.week-nav-btn:hover:not(:disabled) { background: var(--surface-h); color: var(--text); }
+.week-nav-btn:disabled { opacity: .2; cursor: default; }
+
+/* Drag handle */
+.task-drag-handle {
+  font-size: .85rem;
+  color: #2D3748;
+  width: 1.6rem;
+  flex-shrink: 0;
+  text-align: center;
+  cursor: grab;
+  user-select: none;
+  transition: color .15s;
+  line-height: 1;
+}
+
+.task-row:hover .task-drag-handle { color: #4A5568; }
+.task-drag-handle:active { cursor: grabbing; }
+
+/* Drag states */
+.task-row--dragging {
+  opacity: .35;
+}
+
+.task-row--drag-over {
+  border-top: 2px solid var(--a1) !important;
+}
+
 /* Move buttons (edit mode) */
 .task-move-btns {
   display: flex;

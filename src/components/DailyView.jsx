@@ -13,15 +13,43 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
   const [selectedDate, setSelectedDate] = useState(today)
   const [dayData, setDayData] = useState(() => loadDay(today))
   const [isEditing, setIsEditing] = useState(false)
+  const [weekOffset, setWeekOffset] = useState(0)
+  const [draggedIdx, setDraggedIdx] = useState(null)
+  const [dragOverIdx, setDragOverIdx] = useState(null)
 
+  // Compute the 7 tab dates for the current offset week (Sun–Sat)
   const weekDates = (() => {
     const dow = today.getDay()
+    const sunday = new Date(today)
+    sunday.setDate(today.getDate() - dow + weekOffset * 7)
     return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today)
-      d.setDate(today.getDate() - dow + i)
+      const d = new Date(sunday)
+      d.setDate(sunday.getDate() + i)
       return d
     })
   })()
+
+  const weekLabel = (() => {
+    const s = weekDates[0]
+    const e = weekDates[6]
+    const sm = MONTH_NAMES[s.getMonth()].slice(0, 3)
+    const em = MONTH_NAMES[e.getMonth()].slice(0, 3)
+    if (sm === em) return `${sm} ${s.getDate()}–${e.getDate()}, ${s.getFullYear()}`
+    return `${sm} ${s.getDate()} – ${em} ${e.getDate()}, ${e.getFullYear()}`
+  })()
+
+  function navigateWeek(dir) {
+    const newOffset = weekOffset + dir
+    if (newOffset > 0) return
+    setWeekOffset(newOffset)
+    // Move selected date to same day-of-week in new week
+    const dow = today.getDay()
+    const sunday = new Date(today)
+    sunday.setDate(today.getDate() - dow + newOffset * 7)
+    const newDate = new Date(sunday)
+    newDate.setDate(sunday.getDate() + selectedDate.getDay())
+    setSelectedDate(newDate)
+  }
 
   useEffect(() => {
     setDayData(loadDay(selectedDate))
@@ -34,6 +62,8 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
     },
     [selectedDate, saveDay]
   )
+
+  // ── Task handlers ──────────────────────────────────────────────────────────
 
   function handleStatusToggle(idx, nextStatus) {
     const tasks = dayData.tasks.map((t, i) =>
@@ -50,8 +80,7 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
   }
 
   function handleNameChange(idx, value) {
-    const updated = taskNames.map((n, i) => (i === idx ? value : n))
-    setTaskNames(updated)
+    setTaskNames(taskNames.map((n, i) => (i === idx ? value : n)))
   }
 
   function handleMoveUp(idx) {
@@ -75,22 +104,56 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
   }
 
   function handleDelete(idx) {
-    const newNames = taskNames.filter((_, i) => i !== idx)
-    setTaskNames(newNames)
-    const newTasks = dayData.tasks.filter((_, i) => i !== idx)
-    persist({ ...dayData, tasks: newTasks })
+    setTaskNames(taskNames.filter((_, i) => i !== idx))
+    persist({ ...dayData, tasks: dayData.tasks.filter((_, i) => i !== idx) })
   }
 
   function handleAddTask() {
-    const newNames = [...taskNames, 'New task']
-    setTaskNames(newNames)
-    const newTasks = [...dayData.tasks, { status: 'empty', note: '' }]
-    persist({ ...dayData, tasks: newTasks })
+    setTaskNames([...taskNames, 'New task'])
+    persist({ ...dayData, tasks: [...dayData.tasks, { status: 'empty', note: '' }] })
   }
 
   function handleReflectionChange(e) {
     persist({ ...dayData, reflection: e.target.value })
   }
+
+  // ── Drag-and-drop handlers ─────────────────────────────────────────────────
+
+  function handleDragStart(idx) {
+    setDraggedIdx(idx)
+  }
+
+  function handleDragOver(e, idx) {
+    e.preventDefault()
+    if (idx !== dragOverIdx) setDragOverIdx(idx)
+  }
+
+  function handleDrop(idx) {
+    if (draggedIdx === null || draggedIdx === idx) {
+      setDraggedIdx(null)
+      setDragOverIdx(null)
+      return
+    }
+    const from = draggedIdx
+    const to = idx
+    const newNames = [...taskNames]
+    const [n] = newNames.splice(from, 1)
+    newNames.splice(to, 0, n)
+    setTaskNames(newNames)
+    const newTasks = [...dayData.tasks]
+    const [t] = newTasks.splice(from, 1)
+    newTasks.splice(to, 0, t)
+    persist({ ...dayData, tasks: newTasks })
+    setDraggedIdx(null)
+    setDragOverIdx(null)
+  }
+
+  function handleDragEnd() {
+    setDraggedIdx(null)
+    setDragOverIdx(null)
+  }
+
+  // ── Derived ────────────────────────────────────────────────────────────────
 
   const done = dayData.tasks.filter((t) => t.status === 'done').length
   const total = dayData.tasks.length
@@ -110,6 +173,13 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
 
   return (
     <div className="daily-view">
+      {/* Week navigation */}
+      <div className="week-nav">
+        <button className="week-nav-btn" onClick={() => navigateWeek(-1)} aria-label="Previous week">‹</button>
+        <span className="week-nav-label">{weekLabel}</span>
+        <button className="week-nav-btn" onClick={() => navigateWeek(1)} disabled={weekOffset >= 0} aria-label="Next week">›</button>
+      </div>
+
       {/* Day tabs */}
       <div className="day-tabs">
         {weekDates.map((d, i) => (
@@ -156,12 +226,18 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
             isEditing={isEditing}
             isFirst={i === 0}
             isLast={i === taskNames.length - 1}
+            isDragging={draggedIdx === i}
+            isDragOver={dragOverIdx === i}
             onStatusToggle={handleStatusToggle}
             onNoteChange={handleNoteChange}
             onNameChange={handleNameChange}
             onMoveUp={() => handleMoveUp(i)}
             onMoveDown={() => handleMoveDown(i)}
             onDelete={() => handleDelete(i)}
+            onDragStart={() => handleDragStart(i)}
+            onDragOver={(e) => handleDragOver(e, i)}
+            onDrop={() => handleDrop(i)}
+            onDragEnd={handleDragEnd}
           />
         ))}
 

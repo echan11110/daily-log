@@ -3,25 +3,34 @@ export default function TaskRow({
   onStatusToggle, onNoteChange, onNameChange,
   onMoveUp, onMoveDown, onDelete,
   isFirst, isLast,
+  isDragging, isDragOver,
+  onDragStart, onDragOver, onDrop, onDragEnd,
 }) {
   const NEXT_STATUS = { empty: 'done', done: 'cross', cross: 'empty' }
   const statusLabel = status === 'done' ? '✓' : status === 'cross' ? '✗' : ''
   const statusClass = `status-btn status-${status}`
 
+  let rowClass = `task-row task-row--${status}`
+  if (priority) rowClass += ' task-row--priority'
+  if (isDragging) rowClass += ' task-row--dragging'
+  if (isDragOver) rowClass += ' task-row--drag-over'
+
   return (
-    <div className={`task-row task-row--${status}${priority ? ' task-row--priority' : ''}`}>
+    <div
+      className={rowClass}
+      draggable
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      onDragEnd={onDragEnd}
+    >
       {isEditing ? (
         <div className="task-move-btns">
           <button className="task-move-btn" onClick={onMoveUp} disabled={isFirst} aria-label="Move up">↑</button>
           <button className="task-move-btn" onClick={onMoveDown} disabled={isLast} aria-label="Move down">↓</button>
         </div>
       ) : (
-        <span className="task-num">
-          {priority
-            ? <span className="task-priority-star">★</span>
-            : String(index + 1).padStart(2, '0')
-          }
-        </span>
+        <span className="task-drag-handle" aria-hidden="true">⠿</span>
       )}
 
       {isEditing ? (
