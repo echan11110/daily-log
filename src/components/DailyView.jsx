@@ -188,7 +188,8 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
             className={`day-tab${isSel(d) ? ' day-tab--selected' : ''}${isToday(d) ? ' day-tab--today' : ''}`}
             onClick={() => setSelectedDate(new Date(d))}
           >
-            {DAY_LABELS[d.getDay()]}
+            <span className="day-tab-label">{DAY_LABELS[d.getDay()]}</span>
+            <span className="day-tab-date">{d.getDate()}</span>
           </button>
         ))}
       </div>
