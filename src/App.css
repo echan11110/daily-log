@@ -606,7 +606,7 @@ input, textarea { font: inherit; }
   font-family: var(--font-header);
   font-size: .95rem;
   font-style: italic;
-  color: #334155;
+  color: #506A8A;
   line-height: 1.65;
 }
 
@@ -663,7 +663,7 @@ input, textarea { font: inherit; }
 .wc-date {
   font-family: var(--font-mono);
   font-size: .65rem;
-  color: #334155;
+  color: #506A8A;
 }
 
 .wc-bar-wrap {
@@ -1001,7 +1001,7 @@ input, textarea { font: inherit; }
 .mv-task-note {
   font-family: var(--font-mono);
   font-size: .63rem;
-  color: #334155;
+  color: #506A8A;
   flex-shrink: 0;
   max-width: 70px;
   overflow: hidden;
