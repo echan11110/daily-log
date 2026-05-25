@@ -6,16 +6,16 @@ input, textarea { font: inherit; }
 /* ── Custom properties ─────────────────────────────── */
 :root {
   /* Dark palette */
-  --bg:           #07090F;
-  --card-start:   #0F1220;
-  --card-end:     #090C17;
-  --surface:      rgba(255,255,255,.04);
-  --surface-h:    rgba(255,255,255,.08);
+  --bg:           #0C0F1A;
+  --card-start:   #141929;
+  --card-end:     #0E1220;
+  --surface:      rgba(255,255,255,.06);
+  --surface-h:    rgba(255,255,255,.10);
 
   /* Text */
   --text:         #E2E8F0;
-  --text-dim:     #64748B;
-  --text-faint:   #1E293B;
+  --text-dim:     #8B9EB8;
+  --text-faint:   #2D3F55;
 
   /* Separator */
   --rule:         rgba(255,255,255,.07);
