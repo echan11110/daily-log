@@ -226,6 +226,10 @@ input, textarea { font: inherit; }
   border-radius: 3px;
 }
 
+.task-row:not(.task-row--done):not(.task-row--cross):not(.task-row--dragging):hover {
+  background: rgba(124,58,237,.04);
+}
+
 .task-row--done  { background: var(--green-bg); }
 .task-row--cross { background: var(--red-bg); }
 
@@ -264,9 +268,9 @@ input, textarea { font: inherit; }
 
 /* Status button */
 .status-btn {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 5px;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 6px;
   border: 1px solid rgba(255,255,255,.12);
   background: var(--surface);
   font-family: var(--font-mono);
@@ -275,11 +279,12 @@ input, textarea { font: inherit; }
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background .18s, border-color .18s, color .18s, box-shadow .18s;
+  transition: background .18s, border-color .18s, color .18s, box-shadow .18s, transform .1s;
   color: transparent;
 }
 
 .status-btn:hover { background: var(--surface-h); border-color: rgba(255,255,255,.25); }
+.status-btn:active { transform: scale(0.88); }
 
 .status-btn.status-done {
   background: var(--green-bg);
@@ -330,17 +335,18 @@ input, textarea { font: inherit; }
 .week-nav-btn {
   font-size: 1.3rem;
   color: #94A3B8;
-  width: 2rem;
-  height: 2rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background .15s, color .15s;
+  transition: background .15s, color .15s, transform .1s;
   flex-shrink: 0;
 }
 
 .week-nav-btn:hover:not(:disabled) { background: var(--surface-h); color: var(--text); }
+.week-nav-btn:active:not(:disabled) { transform: scale(0.9); }
 .week-nav-btn:disabled { opacity: .18; cursor: default; }
 
 /* Drag handle */
@@ -467,14 +473,12 @@ input, textarea { font: inherit; }
   color: var(--text-dim);
 }
 
-/* Gradient ombre percentage */
+/* Dynamic score percentage color */
 .score-value strong {
-  background: linear-gradient(135deg, #A78BFA, #60A5FA);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--score-color, #A78BFA);
   font-size: 1.1rem;
-  filter: drop-shadow(0 0 8px rgba(124,58,237,.4));
+  filter: drop-shadow(0 0 10px var(--score-glow, rgba(124,58,237,.4)));
+  transition: color .5s ease, filter .5s ease;
 }
 
 /* ── Punishment Verdict ────────────────────────────── */
@@ -1210,6 +1214,29 @@ input, textarea { font: inherit; }
   transition: opacity .15s;
 }
 .login-back:hover { opacity: 1; }
+
+/* ── Focus rings (keyboard nav) ────────────────────── */
+.day-tab:focus-visible,
+.week-nav-btn:focus-visible,
+.status-btn:focus-visible,
+.edit-btn:focus-visible,
+.task-delete-btn:focus-visible,
+.task-move-btn:focus-visible,
+.task-add-btn:focus-visible,
+.toggle-btn:focus-visible,
+.mv-nav:focus-visible {
+  outline: 2px solid #A78BFA;
+  outline-offset: 2px;
+}
+
+/* ── Reduced motion ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
 
 /* ── Responsive ────────────────────────────────────── */
 @media (max-width: 600px) {

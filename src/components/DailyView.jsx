@@ -159,6 +159,20 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
   const total = dayData.tasks.length
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
 
+  // Score color: red (0%) → orange → yellow → lime → green (100%)
+  const scoreColor = total === 0 ? '#64748B'
+    : pct >= 86 ? '#10B981'
+    : pct >= 71 ? '#84CC16'
+    : pct >= 51 ? '#FBBF24'
+    : pct >= 31 ? '#F97316'
+    : '#EF4444'
+  const scoreGlow = total === 0 ? 'rgba(100,116,139,.15)'
+    : pct >= 86 ? 'rgba(16,185,129,.35)'
+    : pct >= 71 ? 'rgba(132,204,18,.3)'
+    : pct >= 51 ? 'rgba(251,191,36,.3)'
+    : pct >= 31 ? 'rgba(249,115,22,.3)'
+    : 'rgba(239,68,68,.3)'
+
   const isToday = (d) =>
     d.getFullYear() === today.getFullYear() &&
     d.getMonth() === today.getMonth() &&
@@ -250,7 +264,7 @@ export default function DailyView({ taskNames, setTaskNames, loadDay, saveDay })
       </div>
 
       {/* Score */}
-      <div className="score-bar">
+      <div className="score-bar" style={{ '--score-color': scoreColor, '--score-glow': scoreGlow }}>
         <span className="score-label">Score</span>
         <span className="score-value">
           {done} / {total} = <strong>{pct}%</strong>
